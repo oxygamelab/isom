@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fabric</title>
+    <style>
+        :root {
+            --half: -66px;
+        } 
+        html, body {
+            padding: 0;
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            user-select: none;
+            font-family: system-ui;
+        }
+        #world {
+            background-color: #f5f5f5;
+            position: relative;
+            z-index: 9999;
+            transform: translate(0, var(--half));
+        }
+        .td3 #world {
+            transform: translate(0, var(--half)) rotateX(60deg) rotateZ(45deg);
+        }
+        #map {
+            display: none;
+            position: relative;
+        }
+        .td3 #map {
+            display: block;
+        }
+        .tile {
+            position: absolute;
+            transform: translate(-50%, -100%);
+        }
+        #world .tile {
+            background-color: #8AB549;
+            transform: translate(-50%, -50%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        .td3 #world .tile {
+            background-color: transparent;
+            transform: translate(-50%, -50%);
+        }
+        #world .tile span {
+            display: none;
+            opacity: .4;
+        }
+        #world .tile:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        #world .tile:hover span {
+            display: block;
+        }
+        .grass {
+            background-image: url(assets/grass.png);
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center bottom;
+        }
+        #world .tile.text {
+            justify-content: flex-start;
+            align-items: flex-start;
+            z-index: 999;
+        }
+        #world .tile.text span {
+            display: block;
+            padding: 10px 15px;
+            box-sizing: border-box;
+            background-color: #333;
+            color: white;
+            opacity: 1;
+        }
+        #test {
+            display: none;
+            background-color: tomato;
+            z-index: 999999;
+            transform: translate(0, -66px) rotateX(60deg) rotateZ(45deg);
+            position: absolute;
+        }
+    </style>
+</head>
+<body class="td3">
+    <div id="world"></div>
+    <div id="map"></div>
+    <script>
+        const grass = {
+            img: 'assets/grass.png',
+            o: 0,
+        };
+        const road = {
+            img: 'assets/road.png',
+            o: 0,
+        };
+        const water = {
+            img: 'assets/water.png',
+            o: 0,
+        };
+        const size = 132;
+        const tile = {
+            w: size,
+            h: size / 2,
+            i: Math.sqrt( Math.pow(size, 2) / 2),
+        };
+        const root = document.querySelector(':root');
+        root.style.setProperty('--half', `-${size / 2}px`);
+        const world = document.getElementById('world');
+        const map = document.getElementById('map');
+
+        const land = [
+            [1,1,1,2,1,1,1],
+            [1,1,1,2,1,1,1],
+            [2,2,2,2,1,1,1],
+            [1,1,1,2,2,2,2],
+            [1,1,1,2,1,1,1],
+            [1,1,1,2,1,1,3],
+            [1,1,1,2,1,3,3],
+        ];
+        const texts = [
+            {x: 4, y:0, w:3, h:3, text: 'Production Zone'},
+        ];
+        const objs = [
+            {x:1, y:0, img: 'assets/machine.png'},
+            {x:4, y:2, img: 'assets/machine2.png'},
+            {x:2, y:2, img: 'assets/forklift2.png'},
+        ]
+
+        const drawLand = () => {
+            let zone, area;
+            for (let i = 0; i < land.length; i++) {
+                for (let j = 0; j < land[i].length; j++) {
+                    switch (land[i][j]) {
+
+                        case 1: //grass
+                            img = grass.img
+                            break;
+                        case 2: //road
+                            img = road.img
+                            break;
+                        case 3: //water
+                            img = water.img
+                            break;
+                    
+                        default:
+                            break;
+                    }
+
+                    if (land[i][j] > 0) {
+                        zone = `<div class="tile" style="
+                            width: ${tile.i}px;
+                            height: ${tile.i}px;
+                            left: ${tile.i * j}px;
+                            top: ${tile.i * i}px;
+                            "><span style="
+                                font-size: ${size / 4}px;
+                            ">(${j},${i})</span></div>`;
+                        area = `<img src="${img}" class="tile" style="
+                            width: ${tile.w}px;
+                            height: auto;
+                            left: ${((tile.w / 2) * j) - ((tile.w / 2) * i)}px;
+                            top: ${((tile.h / 2) * j) + ((tile.h / 2) * i)}px;
+                            "></div>`;
+
+                        world.insertAdjacentHTML('beforeend', zone);
+                        map.insertAdjacentHTML('beforeend', area);
+                    }
+                }
+            }
+            
+            
+        }
+
+        const drawText = (arr) => {
+            for (let i = 0; i < arr.length; i++) {
+                let world_text;
+                world_text = `<div class="tile text" style="
+                    width: ${tile.i}px;
+                    height: ${tile.i}px;
+                    left: ${tile.i * arr[i].x}px;
+                    top: ${tile.i * arr[i].y}px;
+                    "><span style="
+                        font-size: ${size / 4}px;
+                        min-width: ${tile.i * arr[i].w}px;
+                        min-height: ${tile.i * arr[i].h}px;
+                    ">${arr[i].text}</span></div>`;
+
+                world.insertAdjacentHTML('beforeend', world_text);
+            }
+        }
+
+        const drawObject = (arr) => {
+            for (let i = 0; i < arr.length; i++) {
+                let map_object;
+                map_object = `<img src="${arr[i].img}" class="tile" style="
+                    z-index: 9999999;
+                    width: ${tile.w}px;
+                    height: auto;
+                    left: ${((tile.w / 2) * arr[i].x) - ((tile.w / 2) * arr[i].y)}px;
+                    top: ${((tile.h / 2) * arr[i].x) + ((tile.h / 2) * arr[i].y)}px;
+                    transform: translate(-50%, calc(-100% - ${size / 4}px));
+                    "></div>`;
+
+                map.insertAdjacentHTML('beforeend', map_object);
+            }
+        }
+
+        drawLand();
+
+        drawText(texts);
+
+        drawObject(objs);
+    </script>
+</body>
+</html>
