@@ -49,6 +49,9 @@
             position: absolute;
             transform: translate(-50%, -100%);
         }
+        .td3 #map img.tile {
+            pointer-events: none;
+        }
         #world .tile {
             background-color: #8AB549;
             transform: translate(-50%, -50%);
@@ -101,10 +104,15 @@
             transform: translate(0, -66px) rotateX(60deg) rotateZ(45deg);
             position: absolute;
         }
-        .toggleView {
+        .screen {
             position: fixed;
             right: 20px;
             top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .toggleView {
             padding: 8px 10px;
             border-radius: 4px;
             border: 1px solid #999;
@@ -116,7 +124,10 @@
     </style>
 </head>
 <body class="td3">
-    <button class="toggleView" onclick="toggleView()">Toggle 2D/3D</button>
+    <div class="screen">
+        <button class="toggleView" onclick="toggleView()">Toggle 2D/3D</button>
+        <select id="selObject"></select>
+    </div>
     <div id="world"></div>
     <div id="map"></div>
     <script>
@@ -143,7 +154,17 @@
             img: 'assets/water.png',
             o: 0,
         };
-        const size = 132;
+        const map_objs = [
+            {w:1, h:1, img:'assets/machine.png', name:'Filler'},
+            {w:1, h:1, img:'assets/machine2.png', name:'Blower'},
+            {w:1, h:1, img:'assets/forklift2.png', name:'Forklift'},
+        ];
+        const selObject = document.getElementById('selObject');
+        for (let i = 0; i < map_objs.length; i++) {
+            selObject.insertAdjacentHTML('beforeend', `<option value="${map_objs[i].img}">${map_objs[i].name}</option>`);
+        }
+
+        const size = 100;
         const tile = {
             w: size,
             h: size / 2,
@@ -197,7 +218,9 @@
                     }
 
                     if (land[i][j] > 0) {
-                        zone = `<div class="tile" style="
+                        zone = `<div class="tile"
+                        onmouseup="addObjectToMap(${j},${i},true)"
+                        style="
                             background-color: ${hex};
                             width: ${tile.i}px;
                             height: ${tile.i}px;
@@ -222,6 +245,11 @@
             
         }
 
+        const addObjectToMap = (x,y) => {
+            const img = selObject.value;
+            addObject(img, x, y,true);
+        }
+
         const drawText = (arr) => {
             for (let i = 0; i < arr.length; i++) {
                 let world_text;
@@ -240,19 +268,30 @@
             }
         }
 
-        const drawObject = (arr) => {
+        const drawObjects = (arr) => {
             for (let i = 0; i < arr.length; i++) {
+                addObject(arr[i].img, arr[i].x, arr[i].y);
+            }
+        }
+
+        const addObject = (img, x, y, check=false) => {
+            let old = objs.find(o => o.x === x && o.y === y);
+            if(!check || !old) {
+
                 let map_object;
-                map_object = `<img src="${arr[i].img}" class="tile" style="
+                map_object = `<img src="${img}" class="tile" style="
                     z-index: 9999999;
                     width: ${tile.w}px;
                     height: auto;
-                    left: ${((tile.w / 2) * arr[i].x) - ((tile.w / 2) * arr[i].y)}px;
-                    top: ${((tile.h / 2) * arr[i].x) + ((tile.h / 2) * arr[i].y)}px;
+                    left: ${((tile.w / 2) * x) - ((tile.w / 2) * y)}px;
+                    top: ${((tile.h / 2) * x) + ((tile.h / 2) * y)}px;
                     transform: translate(-50%, calc(-100% - ${size / 4}px));
                     "></div>`;
 
                 map.insertAdjacentHTML('beforeend', map_object);
+            }
+            if(check) {
+                objs.push({x, y, img});
             }
         }
 
@@ -260,7 +299,7 @@
 
         drawText(texts);
 
-        drawObject(objs);
+        drawObjects(objs);
     </script>
 </body>
 </html>
