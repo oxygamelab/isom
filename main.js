@@ -1,4 +1,4 @@
-const tileSize = 3
+const tileSize = 4
 const world = document.getElementById('world');
 const plane = document.getElementById('plane');
 

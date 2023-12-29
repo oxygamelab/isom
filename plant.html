@@ -41,6 +41,11 @@
         .bb { border-bottom: 2px solid var(--border-color); }
         .br { border-right: 2px solid var(--border-color); }
         #world { position: relative; margin-left: 0; margin-top: 0; }
+        #top {
+            position: relative;
+            transform: translate(0, var(--half)) rotateX(60deg) rotateZ(45deg);
+            z-index: 3;
+        }
         #plane {
             position: relative;
             transform: translate(0, var(--half)) rotateX(60deg) rotateZ(45deg);
@@ -49,6 +54,20 @@
 </head>
 <body>
     <div id="world">
+        <img src="assets/box.svg" style="
+        position: absolute;
+        z-index: 2;
+        left: -2rem;
+        top: -.7rem;
+        width: 4rem;
+        " />
+        <img src="assets/box.svg" style="
+        position: absolute;
+        z-index: 2;
+        left: 0rem;
+        top: .3rem;
+        width: 4rem;
+        " />
         <div id="plane"></div>
     </div>
     <script src="main.js"></script>
